@@ -151,7 +151,7 @@ function love.update(dt)
       -- Get current frame of opponent's ghost
       if opponentGhost ~= nil then
         for i,v in ipairs(opponentGhost['ballData']) do
-          if opponentGhost['ballData'][i].t > gameTimer then
+          if opponentGhost['ballData'][i].t < gameTimer then
             currOpponentGhostFrame = opponentGhost['ballData'][i]
           end
         end

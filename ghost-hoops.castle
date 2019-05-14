@@ -5,3 +5,5 @@ owner: schazers
 primaryColor: FC9301
 coverImage: cover-image.png
 description: A lil hoop-shootin' game with those FANCY physics the kids are all on about these days.
+dimensions: 192x192
+scaling: step

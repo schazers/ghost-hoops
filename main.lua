@@ -204,7 +204,7 @@ function love.update(dt)
       end
 
       -- Reset shot if ball is off bottom
-      if shotStep == 'shoot' and ball.body:getY() > GAME_HEIGHT * 1.35 then
+      if shotStep == 'shoot' and ball.body:getY() > love.graphics.getHeight() * 1.35 then
         love.audio.play(aimSound:clone())
         shotAngle = 0
         shotPower = 0

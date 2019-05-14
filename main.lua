@@ -20,7 +20,7 @@ local SHOT_X = 25
 local SHOT_Y = 140
 local BALL_BOUNCINESS = 0.7
 local GRAVITY = 200
-local GAME_SECONDS = 30
+local GAME_SECONDS = 5
 
 -- Game variables
 local world
@@ -118,6 +118,23 @@ end
 
 -- Updates the game state
 function love.update(dt)
+
+  -- DO a celebration with camera flashes
+  celebrationTimer = math.max(0.00, celebrationTimer - dt)
+  if celebrationTimer > 0.00 then
+    for _, flash in ipairs(flashes) do
+      flash.timeToDisappear = math.max(0.00, flash.timeToDisappear - dt)
+    end
+    table.insert(flashes, {
+      x = math.random(10, love.graphics.getWidth() - 10),
+      y = math.random(10, love.graphics.getHeight() - 10),
+      timeToDisappear = 0.10
+    })
+  else
+    flashes = {}
+  end
+
+  -- When the player is playing...
   if gameState == 'playing' then
     if gameTimer < 0 and shotStep ~= 'shoot' then
       -- Save one last frame of ghost
@@ -131,7 +148,6 @@ function love.update(dt)
     else
       -- Update timers
       shotTimer = shotTimer + dt
-      celebrationTimer = math.max(0.00, celebrationTimer - dt)
       gameTimer = gameTimer - dt
       playerGhostRecordingTimer = playerGhostRecordingTimer + dt
 
@@ -189,20 +205,6 @@ function love.update(dt)
         love.audio.play(flashSound:clone())
       end
 
-      -- Camera flashes!
-      if celebrationTimer > 0.00 then
-        for _, flash in ipairs(flashes) do
-          flash.timeToDisappear = math.max(0.00, flash.timeToDisappear - dt)
-        end
-        table.insert(flashes, {
-          x = math.random(10, love.graphics.getWidth() - 10),
-          y = math.random(10, love.graphics.getHeight() - 10),
-          timeToDisappear = 0.10
-        })
-      else
-        flashes = {}
-      end
-
       -- Reset shot if ball is off bottom
       if shotStep == 'shoot' and ball.body:getY() > love.graphics.getHeight() * 1.35 then
         love.audio.play(aimSound:clone())
@@ -224,36 +226,23 @@ function love.draw()
   love.graphics.setColor(1, 1, 1)
 
   if gameState == 'title' then
-    love.graphics.print('Press Space to start hoopin', 32, 98, 0, 0.8, 0.8)
+    love.graphics.print('Spacebar 2 hoop', 55, 98, 0, 0.8, 0.8)
   elseif gameState == 'score_screen' then
-    love.graphics.print('Hoops scored: '..numShotsMade, 32, 98, 0, 0.8, 0.8)
-    love.graphics.print('Press Space to re-hoop', 32, 118, 0, 0.8, 0.8)
-    love.graphics.print('Press p to post a ghost', 32, 138, 0, 0.8, 0.8)
-  elseif gameState == 'playing' then
-    -- Draw the camera flashes
-    for _, flash in ipairs(flashes) do
-      if flash.timeToDisappear > 0.00 then
-        love.graphics.draw(flashImage, flash.x - 5, flash.y - 7)
-      end
-    end
+    love.graphics.print('Hoops scored: '..numShotsMade, 45, 98, 0, 0.8, 0.8)
+    love.graphics.print('Spacebar 2 rehoop', 45, 118, 0, 0.8, 0.8)
+    love.graphics.print('Press p to post a ghost', 45, 138, 0, 0.8, 0.8)
+  end
 
+  -- Draw the camera flashes
+  for _, flash in ipairs(flashes) do
+    if flash.timeToDisappear > 0.00 then
+      love.graphics.draw(flashImage, flash.x - 5, flash.y - 7)
+    end
+  end
+
+  if gameState == 'playing' then
     local secondsFormat = gameTimer < 10.0 and "%01d" or "%02d"
     love.graphics.print(string.format(secondsFormat, math.max(gameTimer + 1, 0)), 2, 2, 0, 1.0, 1.0)
-
-    -- Draw the ball
-    love.graphics.draw(ballImage, ball.body:getX() - 8, ball.body:getY() - 8)
-
-    -- Draw the ghost ball
-    if currOpponentGhostFrame ~= nil then
-      local x,y = currOpponentGhostFrame.x, currOpponentGhostFrame.y
-      love.graphics.setColor(1,1,1,0.4)
-      love.graphics.draw(ballImage, x - 8, y - 8)
-    end
-
-    love.graphics.setColor(1,1,1,1)
-
-    -- Draw the hoop
-    love.graphics.draw(hoopImage, 138, 40)
 
     -- Draw aiming reticle
     if shotStep ~= 'shoot' then
@@ -263,16 +252,32 @@ function love.draw()
         love.graphics.rectangle('fill', SHOT_X + math.cos(shotAngle) * dist - 1, SHOT_Y + math.sin(shotAngle) * dist - 1, 2, 2)
       end
     end
-
-    -- Draw the physics objects (for debugging)
-    if DRAW_PHYSICS_OBJECTS then
-      love.graphics.setColor(1, 1, 1)
-      love.graphics.circle('fill', ball.body:getX(), ball.body:getY(), ball.shape:getRadius())
-      love.graphics.circle('fill', hoop[1].body:getX(), hoop[1].body:getY(), hoop[1].shape:getRadius())
-      love.graphics.circle('fill', hoop[2].body:getX(), hoop[2].body:getY(), hoop[2].shape:getRadius())
-      love.graphics.polygon('fill', backboard.body:getWorldPoints(backboard.shape:getPoints()))
-    end
   end
+
+  -- Draw the ball
+  love.graphics.draw(ballImage, ball.body:getX() - 8, ball.body:getY() - 8)
+
+  -- Draw the ghost ball
+  if currOpponentGhostFrame ~= nil then
+    local x,y = currOpponentGhostFrame.x, currOpponentGhostFrame.y
+    love.graphics.setColor(1,1,1,0.4)
+    love.graphics.draw(ballImage, x - 8, y - 8)
+  end
+
+  love.graphics.setColor(1,1,1,1)
+
+  -- Draw the hoop
+  love.graphics.draw(hoopImage, 138, 40)
+
+  -- Draw the physics objects (for debugging)
+  if DRAW_PHYSICS_OBJECTS then
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.circle('fill', ball.body:getX(), ball.body:getY(), ball.shape:getRadius())
+    love.graphics.circle('fill', hoop[1].body:getX(), hoop[1].body:getY(), hoop[1].shape:getRadius())
+    love.graphics.circle('fill', hoop[2].body:getX(), hoop[2].body:getY(), hoop[2].shape:getRadius())
+    love.graphics.polygon('fill', backboard.body:getWorldPoints(backboard.shape:getPoints()))
+  end
+  
 end
 
 -- Shoot the ball by pressing space

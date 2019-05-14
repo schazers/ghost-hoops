@@ -12,9 +12,6 @@ if CASTLE_PREFETCH then
 end
 
 -- Render constants
-local GAME_WIDTH = 192
-local GAME_HEIGHT = 192
-local RENDER_SCALE = 3
 local DRAW_PHYSICS_OBJECTS = false
 local GHOST_RECORD_INTERVAL = 0.1
 
@@ -198,8 +195,8 @@ function love.update(dt)
           flash.timeToDisappear = math.max(0.00, flash.timeToDisappear - dt)
         end
         table.insert(flashes, {
-          x = math.random(10, GAME_WIDTH - 10),
-          y = math.random(10, GAME_HEIGHT - 10),
+          x = math.random(10, love.graphics.getWidth() - 10),
+          y = math.random(10, love.graphics.getHeight() - 10),
           timeToDisappear = 0.10
         })
       else
@@ -219,9 +216,6 @@ end
 
 -- Renders the game
 function love.draw()
-  -- Scale and crop the screen
-  love.graphics.setScissor(0, 0, RENDER_SCALE * GAME_WIDTH, RENDER_SCALE * GAME_HEIGHT)
-  love.graphics.scale(RENDER_SCALE, RENDER_SCALE)
   if celebrationTimer > 0.00 then
     love.graphics.clear(253 / 255, 217 / 255, 37 / 255)
   else
